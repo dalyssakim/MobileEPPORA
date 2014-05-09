@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
+    <wb-module deploy-name="MobileEPPORA">
+        <wb-resource deploy-path="/" source-path="/target/m2e-wtp/web-resources"/>
+        <wb-resource deploy-path="/" source-path="/WebContent" tag="defaultRootSource"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources"/>
+        <property name="java-output-path" value="/MobileEPPORA/build/classes"/>
+        <property name="component.exclusion.patterns" value="WEB-INF/web.xml"/>
+        <property name="context-root" value="MobileEPPORA"/>
+    </wb-module>
+</project-modules>
