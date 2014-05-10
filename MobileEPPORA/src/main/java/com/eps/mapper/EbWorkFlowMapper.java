@@ -5,7 +5,6 @@ import java.sql.SQLException;
 
 import org.springframework.jdbc.core.RowMapper;
 
-import com.eps.model.EbUserData;
 import com.eps.model.EbWorkFlow;
 
 public class EbWorkFlowMapper implements RowMapper<EbWorkFlow>{

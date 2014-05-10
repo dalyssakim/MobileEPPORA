@@ -35,7 +35,7 @@
 <div class="ui-grid-solo">
 Project Name : ${wf.projectName} </div><br>
 
-<div class="ui-grid-solo">Task Id : ${wf.taskId} </div><br>
+<div class="ui-grid-solo">Task Id : ${wf.schId} </div><br>
 
 <div class="ui-grid-solo">Start Date : ${wf.startDate} </div><br>
 

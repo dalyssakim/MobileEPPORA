@@ -23,7 +23,7 @@ public class EbWorkFlowOfPTMMapper implements RowMapper<EbWorkFlowOfPTM> {
 		EbWorkFlowOfPTM EbWFofPTM = new EbWorkFlowOfPTM();
 		EbWFofPTM.setPrjId(rs.getString("ProjectId"));
 		EbWFofPTM.setBaseline(rs.getString("nmBaseline"));
-		//EbWFofPTM.setSchId(rs.getString("SchId"));
+		EbWFofPTM.setSchId(rs.getString("SchId"));
 		EbWFofPTM.setProjectName(rs.getString("ProjectName"));
 		EbWFofPTM.setTaskId(rs.getInt("RecId"));
 		EbWFofPTM.setProjectTeamMember(rs.getString("UserName"));

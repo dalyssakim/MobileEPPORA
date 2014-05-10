@@ -1,10 +1,11 @@
 package com.eps.dao;
 
-import java.util.List;
-
 import javax.sql.DataSource;
 
-import com.eps.model.*;
+import com.eps.model.EbProgress;
+import com.eps.model.EbUserData;
+import com.eps.model.EbWorkFlow;
+import com.eps.model.EbWorkFlowOfPTM;
 
 public interface EbProgressDao {
 

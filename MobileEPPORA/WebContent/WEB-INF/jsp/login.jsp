@@ -74,7 +74,7 @@ $('a.edit').live('click', (function(){
     	data : value,
     	success : function(response){
    
-    		 window.location.replace("http://54.245.111.138:8080/MobileEPPORA/edit2.do");
+    		 window.location.replace("./edit2.do");
     		}
     });
  
@@ -98,7 +98,7 @@ $('a.info').live('click', (function(){
     	data : value,
     	success : function(response){
    
-    		 window.location.replace("http://54.245.111.138:8080/MobileEPPORA/info2.do");
+    		 window.location.replace("./info2.do");
     		}
     });
   
@@ -144,7 +144,7 @@ $('a.info').live('click', (function(){
 <a class="info" href="" id="${loadPage}-${workflowlist.taskId}"><img src="images/b_info.png" height="30" width="30"></a>
 </td>
 <td> <a class="hover" href="" id="${workflowlist.projectName}"><img src="images/b_description.gif" height="30" width="30"></a></td>
-<td    ><c:out value="${workflowlist.taskId}"/></td>
+<td    ><c:out value="${workflowlist.schId}"/></td>
 <td  ><c:out value="${workflowlist.status}"/><br>
 <td  ></td>
 </tr>
@@ -167,7 +167,7 @@ $('a.info').live('click', (function(){
 <tr align="center">
 <td  ><a class="edit" href="" data-method="GET" data-theme="none" data-corner="false" id="${loadPage}-${ptmlist.taskId}"><img src="images/b_edit.png"></a></td>
 <td  ><a class="hover" href="" id="${ptmlist.projectName}"><img src="images/b_description.gif" height="30" width="30"></a></td>
-<td  ><c:out value="${ptmlist.taskId}"/></td>
+<td  ><c:out value="${ptmlist.schId}"/></td>
 <td  ><c:out value="${ptmlist.status}"/></td>
 <td  ><a class="info" href="" id="${loadPage}-${ptmlist.taskId}"><img src="images/b_info.png" height="30" width="30"></a></td>
 </tr>

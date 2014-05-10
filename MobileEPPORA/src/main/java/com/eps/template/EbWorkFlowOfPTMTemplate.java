@@ -8,10 +8,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.eps.dao.EbWorkFlowOfPTMDao;
-import com.eps.mapper.EbWorkFlowMapper;
 import com.eps.mapper.EbWorkFlowOfPTMMapper;
 import com.eps.model.EbUserData;
-import com.eps.model.EbWorkFlow;
 import com.eps.model.EbWorkFlowOfPTM;
 
 public class EbWorkFlowOfPTMTemplate implements EbWorkFlowOfPTMDao{
@@ -51,10 +49,10 @@ public class EbWorkFlowOfPTMTemplate implements EbWorkFlowOfPTMDao{
 	*/	
 		
 		String SQL = "select p.ProjectName, p.RecId AS ProjectId,"
-				+ " s.RecId, s.SchTitle, s.SchDescription, s.nmBaseline, s.SchStartDate, s.SchComments,"
+				+ " s.RecId, s.SchId, s.SchTitle, s.SchDescription, s.nmBaseline, s.SchStartDate, s.SchComments,"
 				+ " wf.nmAllocated, wf.nmApproved, wf.SchStatus,"
 				+ " CONCAT(u.FirstName, ' ', u.LastName) AS UserName, wf.nmUserId,"
-				+ " SUM( IF(ta.dtDatePrj<curdate(),ta.nmActual,0) ) nmActualBefore,"
+				+ " SUM( IF(ta.dtDatePrj<=curdate(),ta.nmActual,0) ) nmActualBefore,"
 				+ " wf.nmActual nmActualToday"
 				+ " FROM teb_workflow wf"
 				+ " LEFT JOIN Projects p ON p.CurrentBaseline=wf.nmBaseline AND p.RecId=wf.nmProjectId"

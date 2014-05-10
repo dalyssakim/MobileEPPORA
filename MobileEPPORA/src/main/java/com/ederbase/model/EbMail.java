@@ -2,7 +2,6 @@ package com.ederbase.model;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.sql.ResultSet;
 import java.util.Calendar;

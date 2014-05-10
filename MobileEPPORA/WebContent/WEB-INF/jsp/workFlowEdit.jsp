@@ -51,7 +51,7 @@ table{
 <table data-role="table" id="status">
 <thead>
 <tr style="border-bottom: 1px solid rgba(0, 0, 0, 1);">
-<th>Task Id:</th><th> <form:input class="looks_like_input" path="taskId" readonly="true"/> 
+<th>Task Id:</th><th> <form:input class="looks_like_input" path="schId" readonly="true"/> 
 </th>
 </tr>
 </thead>

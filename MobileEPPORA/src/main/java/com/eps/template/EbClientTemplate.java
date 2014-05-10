@@ -6,7 +6,6 @@ import javax.sql.DataSource;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import com.ederbase.model.EbCipher;
 import com.eps.dao.EbClientDao;
 import com.eps.mapper.EbClientMapper;
 import com.eps.model.EbClient;

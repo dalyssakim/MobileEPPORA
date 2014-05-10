@@ -1,6 +1,7 @@
 package samples;
 
 import java.util.List;
+
 import javax.sql.DataSource;
 
 public interface jdbcTestDAO {

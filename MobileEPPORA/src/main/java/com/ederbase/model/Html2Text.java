@@ -3,8 +3,9 @@ package com.ederbase.model;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Enumeration;
+
 import javax.swing.text.MutableAttributeSet;
-import javax.swing.text.html.*;
+import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.parser.ParserDelegator;
 

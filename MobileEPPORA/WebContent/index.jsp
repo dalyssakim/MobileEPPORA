@@ -59,7 +59,7 @@ table tr td:last-child {
     </head>
     <body>
 <script type="text/javascript">
-    window.location.href = "http://54.245.111.138:8080/MobileEPPORA/welcome.do";
+    window.location.href = "./welcome.do";
 </script>    
 
     </body>

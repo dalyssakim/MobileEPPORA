@@ -53,7 +53,7 @@ table{
 <table data-role="table" id="expended">
 <thead>
 <tr style="border-bottom: 1px solid rgba(0, 0, 0, 1);" style="text-align:left;">
-<th>Task Id :</th> <th> <form:input class="looks_like_input" data-theme="none" path="taskId" readonly="true"/> </th>
+<th>Task Id :</th> <th> <form:input class="looks_like_input" data-theme="none" path="schId" readonly="true"/> </th>
 </tr>
 </thead>
 </table>
@@ -82,7 +82,7 @@ Estimated Hours : ${wfptm.estimatedHours} <br>
 <table data-role="table" id="expended">
 <thead>
 <tr style="border-bottom: 1px solid rgba(0, 0, 0, 1);" style="text-align:left;">
-<th>Expended Hours Today</th>  <th> <input id="expendedHoursToday" name="expendedHoursToday" type="text" placeholder="${wfptm.expendedHoursToday}"></th>
+<th>Expended Hours Today</th>  <th> <input id="expendedHoursToday" name="expendedHoursToday" type="text" value="${wfptm.expendedHoursToday}"></th>
 </tr>
 </thead>
 </table>
@@ -95,7 +95,7 @@ Progress :<c:set var="userq" value="${wfptm.pgDescription}"/>
  <c:set var="userq" value="${wfptm.pgDescription}"/>
  <c:if test="${userq != 'no progress'}">
 Description: ${wfptm.pgDescription}<br>
-Incremental progress : <input id="incrementalProgress" name="incrementalProgress" type="text" placeholder="${wfptm.pgIncrementalProgress}"><br>
+Incremental progress : <input id="incrementalProgress" name="incrementalProgress" type="text" value="${wfptm.pgIncrementalProgress}"><br>
 Description : ${wfptm.description}<br>
 </c:if>
 Message : <input id="message" name="message" type="text" value="${wfptm.message}"><br>

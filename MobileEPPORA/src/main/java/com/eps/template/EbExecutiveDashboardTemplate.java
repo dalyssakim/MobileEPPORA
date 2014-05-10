@@ -8,9 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.eps.dao.EbExecutiveDashboardDao;
 import com.eps.mapper.EbExecutiveDashboardMapper;
-import com.eps.mapper.EbMessagesMapper;
 import com.eps.model.EbExecutiveDashboard;
-import com.eps.model.EbMessages;
 import com.eps.model.EbUserData;
 
 public class EbExecutiveDashboardTemplate implements EbExecutiveDashboardDao{

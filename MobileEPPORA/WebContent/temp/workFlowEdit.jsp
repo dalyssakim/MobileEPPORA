@@ -38,7 +38,7 @@
 <label id="projectNameTag" for="projectname">Project Name :</label>
 <form:input id="projectname" name="projectname" path="projectName" readonly="true"/>
 </div>
-Task Id : <form:input path="taskId" readonly="true"/> 
+Task Id : <form:input path="schId" readonly="true"/> 
 Status : <select name="status">
 	<option value="Not Started">Not Started</option>
 	<option value="In progress">In progress</option>

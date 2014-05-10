@@ -37,7 +37,7 @@
 Project Name : ${wfptm.projectName} <br>
 </div>
 <div class="ui-grid-solo">
-Task Id : ${wfptm.taskId}</div><br>
+Task Id : ${wfptm.schId}</div><br>
 <div class="ui-grid-solo">
 Project Team Member : ${wfptm.projectTeamMember}</div> <br>
 <div class="ui-grid-solo">

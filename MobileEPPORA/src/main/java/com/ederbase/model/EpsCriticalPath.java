@@ -74,11 +74,7 @@ public class EpsCriticalPath {
 		} catch (Exception e) {
 			this.stError += "<BR>EROR setEpsCriticalPath " + e;
 		}
-
-	
 	}
-	
-
 
 	public String getStart() {
 		String stReturn = "";
@@ -113,14 +109,14 @@ public class EpsCriticalPath {
 				// TANPD: Temporary comment
 				dtStart.add(Calendar.DAY_OF_YEAR, +1); // Tomorrow
 			}
-			
+
 			int iLoop = 0;
 			do {
 				iLoop = checkHoliday(dtStart);
 				if (iLoop > 0)
 					dtStart.add(Calendar.DAY_OF_YEAR, iLoop);
 			} while (iLoop != 0);
-			
+
 			calculateEnd(dPreviousHours);
 		} catch (Exception e) {
 			this.stError += "<BR> ERRROR setStart " + e;

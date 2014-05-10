@@ -1,7 +1,5 @@
 package com.eps.template;
 
-import java.sql.ResultSet;
-
 import javax.sql.DataSource;
 
 import org.springframework.jdbc.core.JdbcTemplate;

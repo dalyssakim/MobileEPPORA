@@ -10,8 +10,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.Calendar;
-import com.eps.model.EbUserData;
 
+import com.eps.model.EbUserData;
 
 public class EpsXlsProject // extends EpsUserData
 {
@@ -39,34 +39,27 @@ public class EpsXlsProject // extends EpsUserData
 	private int iCpIndexByDate = -1;
 	private int iMaxRecId = 0;
 
-	
 	private EbDatabase ebdb = null;
 	private EbDatabase ebdy = null;
 
-	public ResultSet rsMyDiv = null; 
-	
-	
+	public ResultSet rsMyDiv = null;
+
 	public EpsXlsProject() {
 
-		
-		this.ebdb = new EbDatabase(0, "localhost", "root", "",
-				"ebeps", "");
-		this.ebdy = new EbDatabase(0, "localhost", "root", "",
-				"dbeps", "");
+		this.ebdb = new EbDatabase(0, "localhost", "root", "", "ebeps", "");
+		this.ebdy = new EbDatabase(0, "localhost", "root", "", "dbeps", "");
 	}
 
 	public void setEpsXlsProject(EbUserData epsUd) {
 
 		this.epsUd = epsUd;
-		this.ebdb = new EbDatabase(0, "localhost", "root", "",
-				"ebeps", "");
-		this.ebdy = new EbDatabase(0, "localhost", "root", "",
-				"dbeps", "");
+		this.ebdb = new EbDatabase(0, "localhost", "root", "", "ebeps", "");
+		this.ebdy = new EbDatabase(0, "localhost", "root", "", "dbeps", "");
 
 		this.startTime = System.nanoTime();
 
 		int iUserId = epsUd.getNmUserId();
-	
+
 		try {
 			if (iUserId > 0) {
 				rsMyDiv = this.ebdy
@@ -84,22 +77,19 @@ public class EpsXlsProject // extends EpsUserData
 		} catch (Exception e) {
 			this.stError += "<BR>ERROR: setUser " + e;
 		}
-	
+
 		try {
 			this.epsUd.setNmHoursPerDay(rsMyDiv.getDouble("nmHoursPerDay"));
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
 
 	public String getError() {
 		return this.stError;
 	}
-
-	
-
 
 	public String processCriticalPath() {
 		// http://hspm.sph.sc.edu/courses/j716/cpm/cpm.html
@@ -161,14 +151,14 @@ public class EpsXlsProject // extends EpsUserData
 			for (int i = 0; i < aCp.length; i++)
 				aCp[i] = null;
 
-			String stSql = "select * from Schedule s left join teb_link l on s.nmProjectId=l.nmProjectId and "
-					+ "s.nmBaseline=l.nmBaseline and l.nmLinkFlags=2 and l.nmFromId=s.RecId "
-					+ "where s.nmProjectId="
-					+ stPk
-					+ " and s.nmBaseline="
-					+ this.nmBaseline
-					+ " and (s.SchFlags & 0x10 ) != 0 "
-					+ "order by RecId, nmToId";
+			String stSql = "SELECT * FROM schedule s"
+					+ " LEFT JOIN teb_link l ON s.nmProjectId=l.nmFromProject AND s.nmBaseline=l.nmFromBaseline"
+					+ " AND l.nmLinkFlags=2 AND l.nmFromId=s.RecId"
+					+ " WHERE ((s.nmProjectId=" + stPk + " and s.nmBaseline="
+					+ this.nmBaseline + ") OR (l.nmToProject=" + stPk
+					+ " and l.nmToBaseline=" + this.nmBaseline
+					+ ")) AND (s.SchFlags & 0x10) != 0 "
+					+ "ORDER BY RecId, nmToId";
 
 			ResultSet rsAll = this.ebdy.ExecuteSql(stSql);
 			rsAll.last();
@@ -180,23 +170,31 @@ public class EpsXlsProject // extends EpsUserData
 				// iR++)
 				for (int iR = 1; iR <= iMaxSchedule; iR++) {
 					rsAll.absolute(iR);
-					if (aCp[rsAll.getInt("RecId")] == null) {
-						aCp[rsAll.getInt("RecId")] = new EpsCriticalPath();
-						aCp[rsAll.getInt("RecId")].setEpsCriticalPath(
-								iMaxRecId, epsUd, rsProject, rsAll, stHolidays,
-								aWeekend);
-						aCp[rsAll.getInt("RecId")].addSuccessor(rsAll);
+					EpsCriticalPath epsCp = aCp[rsAll.getInt("RecId")];
+					if (epsCp == null) {
+						epsCp = new EpsCriticalPath();
+						epsCp.setEpsCriticalPath(iMaxRecId, epsUd, rsProject,
+								rsAll, stHolidays, aWeekend);
+						epsCp.addSuccessor(rsAll);
+						if (!stPk.equals(rsAll.getString("nmProjectId"))) {
+							epsCp.dtStart = Calendar.getInstance();
+							epsCp.dtStart
+									.setTime(rsAll.getDate("SchStartDate"));
+							epsCp.dtEnd = Calendar.getInstance();
+							epsCp.dtEnd.setTime(rsAll.getDate("SchFinishDate"));
+						}
 					} else {
-						aCp[rsAll.getInt("RecId")].addSuccessor(rsAll);
+						epsCp.addSuccessor(rsAll);
 					}
-					this.stError += aCp[rsAll.getInt("RecId")].getError();
+					aCp[rsAll.getInt("RecId")] = epsCp;
+					this.stError += epsCp.getError();
 				}
 				for (int iR = 0; iR < aCp.length; iR++)
 					setDependendies(iR);
 
-				stSql = "select * from Schedule s left join teb_link l on s.nmProjectId=l.nmProjectId and "
-						+ "s.nmBaseline=l.nmBaseline and l.nmLinkFlags=2 and l.nmToId=s.RecId "
-						+ "where s.nmProjectId="
+				stSql = "select * from Schedule s left join teb_link l on s.nmProjectId=l.nmToProject and "
+						+ "s.nmBaseline=l.nmToBaseline and l.nmLinkFlags=2 and l.nmToId=s.RecId"
+						+ " where s.nmProjectId="
 						+ stPk
 						+ " and s.nmBaseline="
 						+ this.nmBaseline
@@ -433,7 +431,6 @@ public class EpsXlsProject // extends EpsUserData
 		return sbReturn.toString();
 	}
 
-	
 	public String getElapsed() {
 		StringBuilder sbReturn = new StringBuilder(5000);
 		long endTime = System.nanoTime();
@@ -448,8 +445,6 @@ public class EpsXlsProject // extends EpsUserData
 		return sbReturn.toString();
 	}
 
-	
-	
 	private Calendar getLatestStart(int iI, Calendar dtStart) {
 		Calendar dtReturn = null;
 		if (dtStart != null)
@@ -458,9 +453,14 @@ public class EpsXlsProject // extends EpsUserData
 			dtReturn = Calendar.getInstance();
 			dtReturn.add(Calendar.DAY_OF_YEAR, +1);
 		}
+
 		Calendar dtEnd2 = null;
 
 		if (aCp[iI] != null) {
+			// pre-fixed date
+			if (aCp[iI].dtStart != null && aCp[iI].dtStart.after(dtReturn)) {
+				dtReturn = (Calendar) aCp[iI].dtStart.clone();
+			}
 			for (int iD = 0; iD < iMaxRecId; iD++) {
 				if (aCp[iI].aDependency[iD] > 0) {
 					if (iI > 0
@@ -849,19 +849,12 @@ public class EpsXlsProject // extends EpsUserData
 	 */
 	public void processScheduleRequirementCost(int scheduleID)
 			throws SQLException {
-		// get requirements we need to calculate
-		int[] reqIDs = null;
-		int iCount = 0;
-
 		// get all requirements that are linked to this schedule
-		ResultSet rsReqs = this.ebdy
-				.ExecuteSql("select * from teb_link"
-						+ " where nmLinkFlags=1 and nmToProject=" + stPk
-						+ " and nmToBaseline=" + this.nmBaseline + " and nmToId="
-						+ scheduleID);
+		ResultSet rsReqs = this.ebdy.ExecuteSql("select * from teb_link"
+				+ " where nmLinkFlags=1 and nmToProject=" + stPk
+				+ " and nmToBaseline=" + this.nmBaseline + " and nmToId="
+				+ scheduleID);
 		rsReqs.last();
-		
-		
 		for (int i = 1, iMax = rsReqs.getRow(); i <= iMax; i++) {
 			int iPrjPk = rsReqs.getInt("nmFromProject");
 			int iPrjBaseline = rsReqs.getInt("nmFromBaseline");
@@ -874,7 +867,6 @@ public class EpsXlsProject // extends EpsUserData
 		}
 	}
 
-	
 	/*
 	 * Calculate requirement costs for the current project
 	 */
@@ -939,9 +931,7 @@ public class EpsXlsProject // extends EpsUserData
 		if (nmParentId > 0)
 			processRequirementCost(nmParentId);
 	}
-	
-	
-	
+
 	public void processAllRequirementCost() {
 		try {
 			ResultSet stResult = this.ebdy
@@ -959,18 +949,18 @@ public class EpsXlsProject // extends EpsUserData
 				// calculate sum of tasks for each requirement cost
 				if (lowlvl) {
 					ResultSet rResult = this.ebdy
-							.ExecuteSql("select l.nmPercent, l.nmRemainder, l.nmToId, r.ReqCost from teb_link l left join requirements r on l.nmFromId=r.RecId and l.nmProjectId=r.nmProjectId and l.nmBaseline=r.nmBaseline where l.nmLinkFlags=1 and l.nmProjectId="
-									+ projID
-									+ " and l.nmBaseline="
-									+ bsline
-									+ " and nmFromId=" + reqID);
+							.ExecuteSql("select l.* from teb_link l"
+									+ " left join requirements r on l.nmFromId=r.RecId and l.nmFromProject=r.nmProjectId and l.nmFromBaseline=r.nmBaseline"
+									+ " where l.nmLinkFlags=1 and r.nmProjectId="
+									+ projID + " and r.nmBaseline=" + bsline
+									+ " and r.RecId=" + reqID);
 
 					while (rResult.next()) {
 						stCost = this.ebdy
 								.ExecuteSql1("select SchCost from schedule where nmProjectId="
-										+ projID
+										+ rResult.getString("l.nmToProject")
 										+ " and nmBaseline="
-										+ bsline
+										+ rResult.getString("l.nmToBaseline")
 										+ " and RecId="
 										+ rResult.getString("l.nmToId"));
 						if (stCost == null || stCost.equals(""))
@@ -988,7 +978,7 @@ public class EpsXlsProject // extends EpsUserData
 									+ projID + " and RecId=" + reqID
 									+ " and nmBaseline=" + bsline);
 				} else {
-					stCost = ebdy
+					stCost = this.ebdy
 							.ExecuteSql1("select sum(ReqCost) from requirements where nmProjectId="
 									+ projID
 									+ " and ReqParentRecId="
@@ -1145,7 +1135,7 @@ public class EpsXlsProject // extends EpsUserData
 										+ " AND RecId=" + iParentRecId);
 					}
 				}
-				stSql = "UPDATE WBS SET SchParentRecId=" + iParentRecId
+				stSql = "UPDATE WBS SET WBSParentRecId=" + iParentRecId
 						+ ",WBSLevel=" + rLvl + " WHERE nmProjectID=" + stPrjId
 						+ " AND nmBaseline=" + nmBaseline + " AND RecId="
 						+ stRecId;
@@ -1341,22 +1331,26 @@ public class EpsXlsProject // extends EpsUserData
 										.fmtDbString(stParentFinishDate)
 								+ stWhere);
 				this.ebdy
-						.ExecuteUpdate("delete from teb_link where nmProjectId="
+						.ExecuteUpdate("delete from teb_link where nmLinkFlags=2"
+								+ " AND ((nmToProject="
 								+ stProject
-								+ " and nmBaseline="
+								+ " and nmToBaseline="
 								+ nmBaseline
-								+ " and nmLinkFlags=2 "
-								+ "and (nmToId="
+								+ " and nmToId="
 								+ stPk
-								+ " or nmFromId="
+								+ ") OR (nmFromProject="
+								+ stProject
+								+ " and nmFromBaseline="
+								+ nmBaseline
+								+ " and nmFromId="
 								+ stPk
-								+ ") and nmToProject=nmProjectId order by nmFromId");
+								+ ")) order by nmFromId");
 			}
 		} catch (Exception e) {
 			stError += "<br>ERROR recalcSchedule [" + stPk + "] " + e;
 		}
 	}
-	
+
 	public void updateParentEfforts(String stPrjId, int nmBaseline,
 			int iParentId, boolean isLoop) {
 		int iParentRecId = iParentId;
@@ -1380,9 +1374,37 @@ public class EpsXlsProject // extends EpsUserData
 						+ this.stPk + " AND nmBaseline=" + this.nmBaseline
 						+ " AND (SchFlags&0x10)!=0), 0)" + " WHERE RecId="
 						+ this.stPk + " AND CurrentBaseline=" + this.nmBaseline);
+		updateProjectIndex();
+	}
+
+	public void updateProjectIndex() {
+		ResultSet rs = this.ebdy
+				.ExecuteSql("select IFNULL(SUM(IF(s.SchStatus='Done',s.SchEstimatedEffort,0))/SUM(IF(s.SchStatus='Done',s.SchEfforttoDate,0)), 0) SPI,"
+						+ "IFNULL(SUM(IF(s.SchStatus='Done',s.SchCost,0))/SUM(IF(s.SchStatus='Done',s.nmExpenditureToDate,0)), 0) CPI"
+						+ " from Projects p"
+						+ " join Schedule s on s.nmProjectId=p.RecId and s.nmBaseline=p.CurrentBaseline and s.lowlvl=1"
+						+ " WHERE p.RecId="
+						+ this.stPk
+						+ " AND p.CurrentBaseline="
+						+ this.nmBaseline
+						+ " group by p.RecId");
+		try {
+			if (rs.next()) {
+				double cpi = rs.getDouble("CPI");
+				double spi = rs.getDouble("SPI");
+				this.ebdy
+						.ExecuteUpdate("REPLACE INTO trendline(`date`,`projectId`,`nmBaseline`,`cpi`,`spi`)"
+								+ " VALUES(now(), "
+								+ this.stPk
+								+ ", "
+								+ this.nmBaseline + "," + cpi + "," + spi + ")");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }
 
-	/**
-	 * Translate Division Holidays to I18nJs holidays
-	 */
+/**
+ * Translate Division Holidays to I18nJs holidays
+ */

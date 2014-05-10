@@ -5,7 +5,7 @@ import java.sql.SQLException;
 
 import org.springframework.jdbc.core.RowMapper;
 
-import com.eps.model.*;
+import com.eps.model.EbProgress;
 
 public class EbProgressMapper implements RowMapper<EbProgress>{
 

@@ -1,23 +1,5 @@
 package com.eps.controller;
 
-import javax.mail.MessagingException;
-import javax.servlet.http.*;
-
-import org.springframework.stereotype.Controller;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.web.bind.annotation.ModelAttribute;
-//import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.SessionAttributes;
-import org.springframework.web.servlet.ModelAndView;
-
-import com.ederbase.model.*;
-import com.eps.model.*;
-import com.eps.template.*;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -27,6 +9,35 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.mail.MessagingException;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.ederbase.model.EbDatabase;
+import com.ederbase.model.EbMail;
+import com.ederbase.model.EpsXlsProject;
+import com.eps.model.EbClient;
+import com.eps.model.EbExecutiveDashboard;
+import com.eps.model.EbMessages;
+import com.eps.model.EbUserData;
+import com.eps.model.EbWorkFlow;
+import com.eps.model.EbWorkFlowOfPTM;
+import com.eps.template.EbClientTemplate;
+import com.eps.template.EbExecutiveDashboardTemplate;
+import com.eps.template.EbMessagesTemplate;
+import com.eps.template.EbUserDataTemplate;
+import com.eps.template.EbWorkFlowOfPTMTemplate;
+import com.eps.template.EbWorkFlowTemplate;
 @Controller
 @SessionAttributes({"client"})
 public class EpsController {
@@ -439,10 +450,10 @@ public class EpsController {
 		c.add(Calendar.DATE, 10); // number of days to add
 		String dateEnd = fmt.format(c.getTime());
 		
+		String stSchId = ptmTemp.getSchId();
+		int iRecId = ptmTemp.getTaskId();
 		String stWhere = " WHERE nmProjectId=" + ptmTemp.getPrjId()
-				+ " AND nmBaseline=" + ptmTemp.getBaseline() + " AND RecId=" + ptmTemp.getTaskId();
-		String stId = this.Ebdb
-				.ExecuteSql1("SELECT SchId From Schedule" + stWhere);
+				+ " AND nmBaseline=" + ptmTemp.getBaseline() + " AND RecId=" + iRecId;
 		
 		ResultSet rsP = this.Ebdb
 				.ExecuteSql("SELECT * FROM Projects WHERE RecId=" + ptmTemp.getPrjId());
@@ -466,13 +477,13 @@ public class EpsController {
 				//error
 		}
 		
-		String msg = "Task " + stId + ": Estimated \""
+		String msg = "Task " + stSchId + ": Estimated \""
 				+ptmTemp.getEstimatedHours() + "\", Expended \""
 				+ ptmTemp.getExpendedHoursToday() + "\", Status \"" + this.Ebdb.fmtDbString(ptmTemp.getStatus()) + "\"";
 		makeMessage(rsP.getString("ProjectName"), String.valueOf(this.EbUD.getNmUserId()),
 				"A Workflow Task update is rejected", this.Ebdb.fmtDbString(msg), dateEnd,
 				"./?stAction=projects&t=12&do=xls&pk=" + this.Ebdb.fmtDbString(ptmTemp.getPrjId())
-						+ "&parent=&child=21&a=editfull&r=" + stId);
+						+ "&parent=&child=21&a=editfull&r=" + iRecId);
 		
 		
 		this.Ebdb.ExecuteUpdate("DELETE FROM teb_workflow"
@@ -491,7 +502,6 @@ public class EpsController {
 		
 		String stPrjId = ptmTemp.getPrjId();
 		String stBaseline = ptmTemp.getBaseline();
-		String stSchId = String.valueOf(ptmTemp.getTaskId());
 		String stUserId = String.valueOf(this.EbUD.getNmUserId());
 		
 		this.Ebdb.ExecuteUpdate("DELETE FROM teb_workflow"
@@ -501,13 +511,12 @@ public class EpsController {
 				+ ",dtLastUpdated=now(),nmLastUpdatedUser=" + stUserId
 				+ stWhere);
 		EpsXlsProject epsXlsProject = new EpsXlsProject();
-		epsXlsProject.recalcSchedule(stSchId, stPrjId, Integer.parseInt(stBaseline));
+		epsXlsProject.recalcSchedule("" + iRecId, stPrjId, Integer.parseInt(stBaseline));
 		
 		epsXlsProject.setEpsXlsProject(this.EbUD);
 		epsXlsProject.nmBaseline = Integer.parseInt(stBaseline);
 		epsXlsProject.stPk = stPrjId;
-		epsXlsProject.processScheduleRequirementCost(Integer
-				.parseInt(stSchId));
+		epsXlsProject.processScheduleRequirementCost(iRecId);
 		epsXlsProject
 				.updateParentEfforts(
 						stPrjId,
@@ -522,7 +531,7 @@ public class EpsController {
 		makeTask(15, ptmTemp.getSchTitle());
 		// TODO: dunghm Milestone messages
 		sendMilestoneMessage(stPrjId, Integer.parseInt(stBaseline),
-				stSchId);
+				"" + iRecId);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -579,7 +588,7 @@ public class EpsController {
 		
 		String stPrjId = ptmTemp.getPrjId();
 		String stBaseline = ptmTemp.getBaseline();
-		String stSchId = String.valueOf(ptmTemp.getTaskId());
+		String stRecId = String.valueOf(ptmTemp.getTaskId());
 		String stUserId = String.valueOf(this.EbUD.getNmUserId());
 		
 		ptmTemp.setExpendedHoursToday(stEHT);
@@ -595,11 +604,10 @@ public class EpsController {
 		String dateEnd = fmt.format(c.getTime());
 		String stAllocateWhere = " WHERE nmPrjId=" + stPrjId
 				+ " AND nmBaseline=" + stBaseline + " AND nmTaskID="
-				+ stSchId;
+				+ stRecId;
 		String stWhere = " WHERE nmProjectId=" + ptmTemp.getPrjId()
-				+ " AND nmBaseline=" + ptmTemp.getBaseline() + " AND RecId=" + ptmTemp.getTaskId();
-		String stId = this.Ebdb
-				.ExecuteSql1("SELECT SchId From Schedule" + stWhere);
+				+ " AND nmBaseline=" + ptmTemp.getBaseline() + " AND RecId=" + stRecId;
+		String stSchId = ptmTemp.getSchId();
 		
 		ResultSet rsP = this.Ebdb
 				.ExecuteSql("SELECT * FROM Projects WHERE RecId=" + ptmTemp.getPrjId());
@@ -611,12 +619,12 @@ public class EpsController {
 		double nmTodaySpent = this.Ebdb
 				.ExecuteSql1nm("SELECT SUM(nmActualApproved)"
 						+ " FROM teb_allocateprj WHERE nmUserId="
-						+ this.Ebdb.fmtDbString(String.valueOf(EbUD.getNmUserId()))
+						+ EbUD.getNmUserId()
 						+ " AND dtDatePrj=curdate()");
 		double nmTodayExpended = this.Ebdb
 				.ExecuteSql1nm("SELECT SUM(nmActual)"
 						+ " FROM teb_workflow WHERE nmUserId="
-						+ this.Ebdb.fmtDbString(String.valueOf(EbUD.getNmUserId()))
+						+ EbUD.getNmUserId()
 						+ " AND dtAllocate=curdate()");
 		int iMaxHoursPerDay =  10; //this.rsMyDiv.getInt("MaxWorkHoursPerDay");
 		if ((nmTodaySpent + nmTodayExpended + dExpendedHours) > iMaxHoursPerDay) {
@@ -650,9 +658,9 @@ public class EpsController {
 							+ stUserId) > 0) {
 				this.Ebdb
 						.ExecuteUpdate("UPDATE teb_allocateprj set nmActual="
-								+ String.valueOf(dExpendedHours)
+								+ (nmTodaySpent + dExpendedHours)
 								+ ", nmActualApproved="
-								+ String.valueOf(dExpendedHours)
+								+ (nmTodaySpent + dExpendedHours)
 								+ stAllocateWhere
 								+ " and dtDatePrj=curdate() AND nmUserId="
 								+ stUserId);
@@ -669,9 +677,9 @@ public class EpsController {
 								+ ","
 								+ rs.getString("nmTaskId")
 								+ ",0,"
-								+ dExpendedHours
+								+ (nmTodaySpent + dExpendedHours)
 								+ ","
-								+ dExpendedHours
+								+ (nmTodaySpent + dExpendedHours)
 								+ ")");
 			}
 		}
@@ -684,13 +692,13 @@ public class EpsController {
 				+ ",dtLastUpdated=now(),nmLastUpdatedUser=" + stUserId
 				+ stWhere);
 		EpsXlsProject epsXlsProject = new EpsXlsProject();
-		epsXlsProject.recalcSchedule(stSchId, stPrjId, Integer.parseInt(stBaseline));
+		epsXlsProject.recalcSchedule(stRecId, stPrjId, Integer.parseInt(stBaseline));
 		
 		epsXlsProject.setEpsXlsProject(this.EbUD);
 		epsXlsProject.nmBaseline = Integer.parseInt(stBaseline);
 		epsXlsProject.stPk = stPrjId;
 		epsXlsProject.processScheduleRequirementCost(Integer
-				.parseInt(stSchId));
+				.parseInt(stRecId));
 		epsXlsProject
 				.updateParentEfforts(
 						stPrjId,
@@ -705,7 +713,7 @@ public class EpsController {
 		makeTask(15, ptmTemp.getSchTitle());
 		// TODO: dunghm Milestone messages
 		sendMilestoneMessage(stPrjId, Integer.parseInt(stBaseline),
-				stSchId);
+				stRecId);
 		
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -764,9 +772,8 @@ public class EpsController {
 		 * Except for the parameters, code is just same as eps project.
 		 */
 		String stWhere = " WHERE nmProjectId=" + this.Ebdb.fmtDbString(wfTemp.getPrjId())
-				+ " AND nmBaseline=" + this.Ebdb.fmtDbString(wfTemp.getBaseline()) + " AND RecId=" + this.Ebdb.fmtDbString(wfTemp.getSchId());
-		String stId = this.Ebdb
-				.ExecuteSql1("SELECT SchId From Schedule" + stWhere);
+				+ " AND nmBaseline=" + this.Ebdb.fmtDbString(wfTemp.getBaseline()) + " AND RecId=" + wfTemp.getTaskId();
+		String stSchId = wfTemp.getSchId();
 		
 		ResultSet rsP = this.Ebdb
 				.ExecuteSql("SELECT * FROM Projects WHERE RecId=" + this.Ebdb.fmtDbString(wfTemp.getPrjId()));
@@ -778,7 +785,6 @@ public class EpsController {
 
 			String stPrjId = wfTemp.getPrjId();
 			String stBaseline = wfTemp.getBaseline();
-			String stSchId = String.valueOf(wfTemp.getTaskId());
 			String stUserId = String.valueOf(this.EbUD.getNmUserId());
 			try{
 		
@@ -828,13 +834,13 @@ public class EpsController {
 			
 			this.Ebdb
 					.ExecuteUpdate("REPLACE INTO teb_workflow VALUE("
-							+  this.Ebdb.fmtDbString(wfTemp.getPrjId()) + "," +  this.Ebdb.fmtDbString(wfTemp.getBaseline()) + "," +  this.Ebdb.fmtDbString(wfTemp.getSchId())
+							+  this.Ebdb.fmtDbString(wfTemp.getPrjId()) + "," +  this.Ebdb.fmtDbString(wfTemp.getBaseline()) + "," +  wfTemp.getTaskId()
 							+ "," +  this.Ebdb.fmtDbString(wfTemp.getEstimatedHours()) + ","
 							+  this.Ebdb.fmtDbString(wfTemp.getExpendedHoursToday()) + "," + 0 + ","
 							+  this.Ebdb.fmtDbString(String.valueOf(EbUD.getNmUserId())) + ","
 							+ this.Ebdb.fmtDbString(wfTemp.getStatus())
 							+ ",curdate(),0)");
-			String msg = "Task " + stId + ": Estimated \""
+			String msg = "Task " + stSchId + ": Estimated \""
 					+ wfTemp.getEstimatedHours() + "\", Expended \""
 					+ wfTemp.getExpendedHoursToday() + "\", Status \"" + this.Ebdb.fmtDbString(wfTemp.getStatus()) + "\"";
 			makeMessage(
@@ -844,7 +850,7 @@ public class EpsController {
 							+ rsP.getString("ProjectPortfolioManagerAssignment"),
 					"A Workflow Task is updated", msg, dateEnd,
 					"./?stAction=projects&t=12&do=xls&pk=" + wfTemp.getSchId()
-							+ "&parent=&child=21&a=editfull&r=" + stId);
+							+ "&parent=&child=21&a=editfull&r=" + stSchId);
 			
 			}catch(Exception e){
 				

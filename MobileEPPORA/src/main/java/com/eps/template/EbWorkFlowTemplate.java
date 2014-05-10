@@ -4,15 +4,13 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.springframework.context.ApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.eps.dao.EbWorkFlowDao;
 import com.eps.mapper.EbWorkFlowMapper;
 import com.eps.model.EbUserData;
 import com.eps.model.EbWorkFlow;
-
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class EbWorkFlowTemplate implements EbWorkFlowDao{
 
