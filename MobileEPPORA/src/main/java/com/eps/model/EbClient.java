@@ -11,6 +11,8 @@ public class EbClient {
 	private String stProjects;
 	private String stSchedules;
 	private boolean session = false;
+	private long nmLastLoginTime = 0;
+	private long nmSuccessLoginTime = 0;
 	public Integer getRecId() {
 		return recId;
 	}
@@ -64,5 +66,17 @@ public class EbClient {
 	}
 	public void setStPwd(String stPwd) {
 		this.stPwd = stPwd;
+	}
+	public long getNmLastLoginTime() {
+		return nmLastLoginTime;
+	}
+	public void setNmLastLoginTime(long nmLastLoginTime) {
+		this.nmLastLoginTime = nmLastLoginTime;
+	}
+	public long getNmSuccessLoginTime() {
+		return nmSuccessLoginTime;
+	}
+	public void setNmSuccessLoginTime(long nmSuccessLoginTime) {
+		this.nmSuccessLoginTime = nmSuccessLoginTime;
 	}
 }

@@ -39,7 +39,7 @@
     		<img src="images/EPPORA-logo.png">
     		
         	<form id="Form1" action="login.do" method="post" >
-            
+            <p align="center" style='color: red;'>${popupMessage}</p>
         	<div data-role="fieldcontain">
         	<!--<label for="url">Email </label> -->
         	<input class="required" id="Text2" name="stEmail" type="email" placeholder="E-Mail">
@@ -64,7 +64,6 @@
 
 
         	</form>
-		<p align="center">${popupMessage}</p>
 		</div>
 		<footer data-role="footer"  data-theme="c" data-position="fixed" ><h1>04/30/2014 Mobile EPPORA</h1></footer>
     	</section>

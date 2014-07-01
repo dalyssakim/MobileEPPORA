@@ -25,6 +25,8 @@ public class EbClientMapper implements RowMapper<EbClient> {
 		EbC.setNmPriviledge(rs.getInt("nmPriviledge"));
 		EbC.setStAuth(rs.getString("stAuth"));
 		EbC.setStProjects(rs.getString("stProjects"));
+		EbC.setNmLastLoginTime(rs.getLong("nmLastLoginTime"));
+		EbC.setNmSuccessLoginTime(rs.getLong("SuccessLoginTime"));
 		return EbC;
 	}
 
