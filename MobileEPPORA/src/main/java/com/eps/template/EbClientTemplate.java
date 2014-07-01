@@ -38,6 +38,12 @@ public class EbClientTemplate implements EbClientDao{
 
 		return null;
 	}
+	
+	public void updateUserLoggingTime(EbClient EbC) {
+		long millis = System.currentTimeMillis();
+		String SQL = "UPDATE X25User SET nmLastLoginTime=?, SuccessLoginTime=? WHERE RecId=?";
+		jdbcTemplateObject.update(SQL, new Object[]{millis,millis,EbC.getRecId()});
+	}
 
 
 }

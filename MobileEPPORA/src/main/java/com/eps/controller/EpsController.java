@@ -193,8 +193,7 @@ public class EpsController {
 		if (EbC.isEmpty()) {
 			ModelAndView mav = new ModelAndView("welcome");
 			mav.addObject("question", "What is your favorite color?");
-			mav.addObject("popupMessage",
-					"E-Mail/Password not found.");
+			mav.addObject("popupMessage", "E-Mail/Password not found.");
 			return mav;
 		} else {
 			/*
@@ -209,6 +208,11 @@ public class EpsController {
 								+ " minutes.");
 				return mav;
 			}
+			/*
+			 * Update login time
+			 */
+			EbcTemplate.updateUserLoggingTime(ebClient);
+
 			/*
 			 * get the previlage.
 			 */
@@ -243,16 +247,7 @@ public class EpsController {
 	@RequestMapping(value = "/logout", method = RequestMethod.GET)
 	public ModelAndView logoutProcess(HttpSession session) {
 
-		session.setAttribute("client", null);
-		if (EbUD != null) {
-			EbUD = null;
-		}
-		if (session.getAttribute("client") != null) {
-			session.removeAttribute("client");
-			/*
-			 * SQL Queries to get users logout from EPS database session
-			 */
-		}
+		session.invalidate();
 
 		ModelAndView mav = new ModelAndView("welcome");
 		mav.addObject("question", "null");
